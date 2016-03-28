@@ -22,9 +22,7 @@ namespace SpotlightDesktop
                 registryKey.SetValue("SpotlightDesktop", executablePath);
             }
 
-
-            var folderPath = SpotlightFolder.GetPath();
-            var filePath = SpotlightImage.GetImages(folderPath);
+            var filePath = SpotlightImage.GetImages();
 
             var random = new Random();
             var imageIndex = random.Next(filePath.Length);

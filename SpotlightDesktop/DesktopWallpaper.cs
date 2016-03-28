@@ -43,11 +43,10 @@ namespace SpotlightDesktop
                 key.SetValue(@"TileWallpaper", 1.ToString());
             }
 
-            int value = SystemParametersInfo(SPI_SETDESKWALLPAPER,
+            SystemParametersInfo(SPI_SETDESKWALLPAPER,
                 0,
                 path,
                 SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
-            Console.WriteLine("status " + value.ToString());
         }
     }
 }
