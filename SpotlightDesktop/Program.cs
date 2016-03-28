@@ -14,22 +14,51 @@ namespace SpotlightDesktop
     {
         static void Main(string[] args)
         {
-            string executablePath = Environment.CurrentDirectory + @"\" + AppDomain.CurrentDomain.FriendlyName;
-
-            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-
-            if (registryKey.GetValue("SpotlightDesktop") == null) {
-                registryKey.SetValue("SpotlightDesktop", executablePath);
-            }
+            RegistryUtil.StartUpRegister();
 
             var filePath = SpotlightImage.GetImages();
 
             var random = new Random();
             var imageIndex = random.Next(filePath.Length);
+            var mirrorImage = ImageUtil.MirrorImage(filePath[imageIndex]);
 
-            var imagePath = filePath[imageIndex].UriSource.AbsolutePath.ToString();
+            string imagePath = String.Format(@"{0}\{1}.jpeg",
+                GetLocalApplicationFolderPath(),
+                Assembly.GetExecutingAssembly().GetName().Name);
 
-            DesktopWallpaper.Set(imagePath, DesktopWallpaper.Style.Stretched);
+            StoreImage(imagePath, mirrorImage);
+            
+            DesktopWallpaper.Set(imagePath, DesktopWallpaper.Style.Tiled);
+        }
+
+        private static string GetLocalApplicationFolderPath()
+        {
+            string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+            string company = ((AssemblyCompanyAttribute)Attribute.GetCustomAttribute(
+                    Assembly.GetExecutingAssembly(),
+                    typeof(AssemblyCompanyAttribute),
+                    false)
+                ).Company;
+
+            string appName = Assembly.GetExecutingAssembly().GetName().Name;
+
+            return String.Format(@"{0}\{1}\{2}",
+                folderPath,
+                company,
+                appName);
+        }
+
+        private static void StoreImage(string path, RenderTargetBitmap image)
+        {
+            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            
+            using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate)) {
+                encoder.Save(fs);
+            }
         }
     }
 }
